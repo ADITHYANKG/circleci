@@ -6,25 +6,60 @@ jobs:
       - image: cimg/node:18.16
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "package-lock.json" }}
       - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: node-modules-{{ checksum "package-lock.json" }}
       - run: npm test || echo "No tests yet"
 
   android-build:
     docker:
-      - image: cimg/android:2023.09
+      - image: cimg/android:2023.09-node
     working_directory: ~/project/android
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "../package-lock.json" }}
       - run: cd .. && npm install
+      - save_cache:
+          paths:
+            - ../node_modules
+          key: node-modules-{{ checksum "../package-lock.json" }}
+      - restore_cache:
+          keys:
+            - gradle-cache-{{ checksum "build.gradle" }}
       - run: ./gradlew assembleDebug
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-cache-{{ checksum "build.gradle" }}
 
   ios-build:
     macos:
       xcode: "14.3.1"
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "package-lock.json" }}
       - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: node-modules-{{ checksum "package-lock.json" }}
+      - restore_cache:
+          keys:
+            - pods-{{ checksum "ios/Podfile.lock" }}
       - run: cd ios && pod install
+      - save_cache:
+          paths:
+            - ios/Pods
+          key: pods-{{ checksum "ios/Podfile.lock" }}
       - run:
           name: Build iOS app
           command: |
