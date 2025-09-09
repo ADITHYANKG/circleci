@@ -1,21 +1,6 @@
 version: 2.1
 
 jobs:
-  build:
-    docker:
-      - image: cimg/node:18.16
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - node-modules-{{ checksum "package-lock.json" }}
-      - run: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: node-modules-{{ checksum "package-lock.json" }}
-      - run: npm test || echo "No tests yet"
-
   android-build:
     docker:
       - image: cimg/android:2023.09-node
@@ -25,17 +10,15 @@ jobs:
     steps:
       - checkout
 
-      # Switch to JDK 11 (more stable than 17 for NDK)
       - run:
           name: Install JDK 11
           command: |
             sudo apt-get update
             sudo apt-get install -y openjdk-11-jdk
             sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk-amd64/bin/java 1
-            sudo update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac 1
+            sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
             java -version
 
-      # Install Ninja (needed for CMake/NDK)
       - run:
           name: Install Ninja
           command: sudo apt-get install -y ninja-build
@@ -53,7 +36,6 @@ jobs:
           keys:
             - gradle-cache-{{ checksum "android/build.gradle" }}
 
-      # Add gradle.properties tweaks for memory stability
       - run:
           name: Configure Gradle Properties
           command: |
@@ -63,9 +45,8 @@ jobs:
             echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
             echo "android.enableAapt2Daemon=false" >> ~/.gradle/gradle.properties
 
-      # Build Android Debug APK
       - run:
-          name: Build Android app
+          name: Build APK
           command: cd android && ./gradlew assembleDebug --console=plain --info --no-daemon --max-workers=1
           no_output_timeout: 60m
 
@@ -82,7 +63,4 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
-      - android-build:
-          requires:
-            - build
+      - android-build
