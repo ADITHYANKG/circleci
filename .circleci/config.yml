@@ -22,6 +22,9 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
+      - run:
+        name: Install Ninja
+        command: sudo apt-get update && sudo apt-get install -y ninja-build
       - restore_cache:
           keys:
             - node-modules-{{ checksum "package-lock.json" }}
@@ -39,7 +42,7 @@ jobs:
             - ~/.gradle
           key: gradle-cache-{{ checksum "android/build.gradle" }}
 
-  ios-build:
+
     macos:
       xcode: "14.3.1"
     steps:
