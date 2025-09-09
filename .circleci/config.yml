@@ -17,9 +17,11 @@ jobs:
       - run: npm test || echo "No tests yet"
 
   android-build:
-    docker:
-      - image: cimg/android:2023.09-node
+    machine:
+      image: android:2023.09.1
     working_directory: ~/project
+    environment:
+      GRADLE_OPTS: "-Xmx2g -Dorg.gradle.workers.max=2 -Dorg.gradle.daemon=false"
     steps:
       - checkout
       - run:
@@ -44,6 +46,9 @@ jobs:
           paths:
             - ~/.gradle
           key: gradle-cache-{{ checksum "android/build.gradle" }}
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug
+          destination: android-apk
 
   ios-build:
     macos:
@@ -74,6 +79,9 @@ jobs:
               -scheme MyExpoBareApp \
               -sdk iphonesimulator \
               -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.4'
+      - store_artifacts:
+          path: ios/build
+          destination: ios-build
 
 workflows:
   version: 2
