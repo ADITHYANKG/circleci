@@ -18,7 +18,7 @@ jobs:
 
   android-build:
     docker:
-      - image: cimg/android:2023.09-node # Android + Node included
+      - image: cimg/android:2023.09-node
     working_directory: ~/project
     steps:
       - checkout
@@ -42,11 +42,35 @@ jobs:
             - ~/.gradle
           key: gradle-cache-{{ checksum "android/build.gradle" }}
 
-
-  
+  ios-build:
+    macos:
       xcode: "14.3.1"
-    
-
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "package-lock.json" }}
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: node-modules-{{ checksum "package-lock.json" }}
+      - restore_cache:
+          keys:
+            - pods-{{ checksum "ios/Podfile.lock" }}
+      - run: cd ios && pod install
+      - save_cache:
+          paths:
+            - ios/Pods
+          key: pods-{{ checksum "ios/Podfile.lock" }}
+      - run:
+          name: Build iOS app
+          command: |
+            cd ios
+            xcodebuild -workspace MyExpoBareApp.xcworkspace \
+              -scheme MyExpoBareApp \
+              -sdk iphonesimulator \
+              -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.4'
 
 workflows:
   version: 2
