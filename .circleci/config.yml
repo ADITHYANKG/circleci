@@ -45,8 +45,8 @@ jobs:
             - gradle-cache-{{ checksum "android/build.gradle" }}
       - run:
           name: Build Android app
-          command: cd android && ./gradlew assembleDebug --console=plain --info
-          no_output_timeout: 30m
+          command: cd android && ./gradlew assembleDebug --console=plain --info --no-daemon --max-workers=1
+          no_output_timeout: 60m
       - save_cache:
           paths:
             - ~/.gradle
