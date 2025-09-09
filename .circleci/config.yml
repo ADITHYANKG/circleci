@@ -17,8 +17,8 @@ jobs:
       - run: npm test || echo "No tests yet"
 
   android-build:
-    machine:
-      image: android:2023.09.1
+    docker:
+      - image: cimg/android:2023.09-node
     working_directory: ~/project
     environment:
       GRADLE_OPTS: "-Xmx2g -Dorg.gradle.workers.max=2 -Dorg.gradle.daemon=false"
