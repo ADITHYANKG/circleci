@@ -44,7 +44,9 @@ jobs:
             echo "org.gradle.workers.max=1" >> ~/.gradle/gradle.properties
             echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
             echo "android.enableAapt2Daemon=false" >> ~/.gradle/gradle.properties
-
+      - run:
+          name: clean gradle build
+          command: cd android && ./gradlew clean
       - run:
           name: Build APK
           command: cd android && ./gradlew assembleDebug --console=plain --info --no-daemon --max-workers=1
