@@ -95,9 +95,9 @@ android {
         versionCode 1
         versionName "1.0"
         ndk {
-    // Only build 1 ABI to save RAM
     abiFilters "armeabi-v7a"
 }
+
     }
     signingConfigs {
         debug {
